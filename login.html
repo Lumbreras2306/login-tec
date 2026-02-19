@@ -22,7 +22,13 @@
         <script>
             document.getElementById('form-login').addEventListener('submit', function (e) {
                 e.preventDefault();
-                alert('Login exitoso');
+                var usuario = document.getElementById('usuario').value;
+                var clave = document.getElementById('clave').value;
+                if (usuario === 'admin' && clave === 'admin') {
+                    alert('Login exitoso');
+                } else {
+                    alert('Usuario o contraseña incorrectos');
+                }
             });
         </script>
     </body>
