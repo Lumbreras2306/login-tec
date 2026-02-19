@@ -1,0 +1,17 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="home">
+<div class="container">
+    <h1>Bienvenido al sistema</h1>
+    <p>Hola, {{ request.user.username }}.</p>
+</div>
+</div>
+{% endblock %}

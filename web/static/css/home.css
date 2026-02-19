@@ -1,0 +1,26 @@
+.home .container {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8e8e8;
+}
+
+.home .container h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.home .container p {
+  margin: 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.home .container p::before {
+  content: "👋 ";
+}
