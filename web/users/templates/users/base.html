@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Sistema{% endblock %}</title>
+    <title>{% block title %}Pokemon Searcher{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <header class="site-header">
-        <nav class="site-nav">
-            {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}">Cerrar sesión</a>
-            {% else %}
-                <a href="{% url 'login' %}">Iniciar sesión</a>
-            {% endif %}
-        </nav>
+        <div class="site-branding">
+            <a href="{% url 'home' %}">Pokemon Searcher</a>
+            <p>Listado simple con PokeAPI</p>
+            <div class="header-actions">
+                {% if user.is_authenticated %}
+                    <a class="header-button" href="{% url 'logout' %}">Cerrar sesion</a>
+                {% else %}
+                    <a class="header-button" href="{% url 'login' %}">Iniciar sesion</a>
+                {% endif %}
+            </div>
+        </div>
     </header>
 
     <main class="site-main">
@@ -24,7 +28,8 @@
     </main>
 
     <footer class="site-footer">
-        <p>Sistema 2026</p>
+        <p>Pokemon Searcher 2026</p>
     </footer>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

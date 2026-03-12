@@ -1,17 +1,181 @@
 {% extends 'users/base.html' %}
 {% load static %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Pokemon Searcher{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="home">
-<div class="container">
-    <h1>Bienvenido al sistema</h1>
-    <p>Hola, {{ request.user.username }}.</p>
-</div>
-</div>
+<section class="home">
+    <div
+        class="container"
+        data-list-api="{% url 'pokemon-list-api' %}"
+        data-detail-base="{% url 'home' %}pokemon/"
+        data-current-page="{{ pokemon_page.page }}"
+    >
+        <h1>Pokemon Searcher</h1>
+        <div class="actions">
+            <a class="button" href="{% url 'battle' %}">Simular pelea</a>
+        </div>
+        <form class="filters" data-filter-form method="get" action="{% url 'home' %}">
+            <input
+                type="text"
+                name="name"
+                placeholder="Buscar por nombre"
+                value="{{ name_filter }}"
+                data-name-filter
+            >
+            <select name="type" data-type-filter>
+                <option value="">Todos los tipos</option>
+                {% for pokemon_type in pokemon_types %}
+                    <option value="{{ pokemon_type }}" {% if pokemon_type == type_filter %}selected{% endif %}>
+                        {{ pokemon_type }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button class="button" type="submit">Buscar</button>
+            <a class="button secondary" href="{% url 'home' %}">Limpiar</a>
+        </form>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% else %}
+            <p class="summary" data-summary>
+                Mostrando {{ pokemon_page.loaded_count }} de {{ pokemon_page.count }} Pokemon.
+            </p>
+
+            <ul class="pokemon-list" data-pokemon-list>
+                {% for pokemon in pokemon_page.results %}
+                    <li data-pokemon-card>
+                        <img src="{{ pokemon.image }}" alt="{{ pokemon.name }}" width="72" height="72">
+                        <div class="pokemon-info">
+                            <span>{{ pokemon.id }}</span>
+                            <strong>{{ pokemon.name }}</strong>
+                        </div>
+                        <div class="pokemon-actions">
+                            <a class="button" href="{% url 'pokemon-detail' pokemon.name %}">Ver detalle</a>
+                        </div>
+                    </li>
+                {% empty %}
+                    <li>No hay pokemones para mostrar.</li>
+                {% endfor %}
+            </ul>
+
+            <nav class="pagination" aria-label="Paginacion" data-pagination>
+                {% if pokemon_page.has_more %}
+                    <button
+                        class="button"
+                        type="button"
+                        data-load-more
+                        data-next-page="{{ next_page }}"
+                    >
+                        Cargar mas
+                    </button>
+                {% else %}
+                    <span class="disabled" data-load-state>No hay mas</span>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (() => {
+        const container = document.querySelector('.home .container');
+        const list = container?.querySelector('[data-pokemon-list]');
+        const summary = container?.querySelector('[data-summary]');
+        const pagination = container?.querySelector('[data-pagination]');
+        const form = container?.querySelector('[data-filter-form]');
+        const nameInput = container?.querySelector('[data-name-filter]');
+        const typeSelect = container?.querySelector('[data-type-filter]');
+        const detailBase = container?.dataset.detailBase;
+        const listApi = container?.dataset.listApi;
+
+        if (!container || !list || !summary || !pagination || !form || !nameInput || !typeSelect || !detailBase || !listApi) {
+            return;
+        }
+
+        const renderCards = (results) => {
+            list.innerHTML = results.map((pokemon) => `
+                <li data-pokemon-card>
+                    <img src="${pokemon.image}" alt="${pokemon.name}" width="72" height="72">
+                    <div class="pokemon-info">
+                        <span>${pokemon.id}</span>
+                        <strong>${pokemon.name}</strong>
+                    </div>
+                    <div class="pokemon-actions">
+                        <a class="button" href="${detailBase}${pokemon.name}/">Ver detalle</a>
+                    </div>
+                </li>
+            `).join('');
+        };
+
+        const renderPagination = (payload) => {
+            if (payload.has_more) {
+                pagination.innerHTML = `
+                    <button
+                        class="button"
+                        type="button"
+                        data-load-more
+                        data-next-page="${payload.page + 1}"
+                    >
+                        Cargar mas
+                    </button>
+                `;
+                pagination.querySelector('[data-load-more]')?.addEventListener('click', loadMore);
+                return;
+            }
+
+            pagination.innerHTML = '<span class="disabled" data-load-state>No hay mas</span>';
+        };
+
+        const loadMore = async (event) => {
+            const button = event.currentTarget;
+            const nextPage = button.dataset.nextPage;
+            button.disabled = true;
+            button.textContent = 'Cargando...';
+
+            try {
+                const query = new URLSearchParams({
+                    page: nextPage,
+                    name: nameInput.value.trim(),
+                    type: typeSelect.value,
+                });
+                const response = await fetch(`${listApi}?${query.toString()}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!response.ok) {
+                    throw new Error('request_failed');
+                }
+
+                const payload = await response.json();
+                renderCards(payload.results);
+                summary.textContent = `Mostrando ${payload.loaded_count} de ${payload.count} Pokemon.`;
+                container.dataset.currentPage = payload.page;
+                renderPagination(payload);
+            } catch (error) {
+                button.disabled = false;
+                button.textContent = 'Cargar mas';
+            }
+        };
+
+        container.querySelector('[data-load-more]')?.addEventListener('click', loadMore);
+        form.addEventListener('submit', (event) => {
+            const params = new URLSearchParams();
+            if (nameInput.value.trim()) {
+                params.set('name', nameInput.value.trim());
+            }
+            if (typeSelect.value) {
+                params.set('type', typeSelect.value);
+            }
+            const query = params.toString();
+            window.location.href = query ? `${form.action}?${query}` : form.action;
+            event.preventDefault();
+        });
+    })();
+</script>
 {% endblock %}

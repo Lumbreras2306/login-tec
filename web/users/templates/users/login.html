@@ -8,18 +8,22 @@
 {% endblock %}
 
 {% block content %}
-<div class="login-box">
-    <h1>Login</h1>
-    <form action="{% url 'login' %}" method="post" id="form-login">
-        {% csrf_token %}
-        {% if error %}<p class="error">{{ error }}</p>{% endif %}
-        <label for="username">Usuario</label>
-        <input type="text" id="username" name="username" required autocomplete="username" value="{{ username|default:'' }}">
+<section class="login-page">
+    <div class="login-box">
+        <h1>Login</h1>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+        <form action="{% url 'login' %}" method="post">
+            {% csrf_token %}
+            <label for="username">Usuario</label>
+            <input type="text" id="username" name="username" value="{{ username|default:'' }}" required>
 
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password" required autocomplete="current-password">
+            <label for="password">Contrasena</label>
+            <input type="password" id="password" name="password" required>
 
-        <button type="submit">Entrar</button>
-    </form>
-</div>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+</section>
 {% endblock %}

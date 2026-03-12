@@ -8,47 +8,73 @@ body {
   display: flex;
   flex-direction: column;
   font-family: system-ui, -apple-system, sans-serif;
+  background: #eef2f7;
+  color: #111827;
 }
 
 .site-header {
-  background: #333;
-  color: #fff;
-  width: 100%;
-  align-self: stretch;
+  padding: 1.5rem;
+  border-bottom: 1px solid #d7deea;
+  background: #ffffff;
 }
 
-.site-nav {
-  display: flex;
+.site-branding {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.header-actions {
+  margin-top: 1rem;
+}
+
+.header-button {
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  margin: 0;
-  padding: 0 1.5rem;
-  min-height: 3rem;
-  width: 100%;
+  justify-content: center;
+  padding: 0.65rem 0.95rem;
+  border: 1px solid #111827;
+  border-radius: 6px;
+  background: #111827;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .site-header a {
-  color: #fff;
+  color: #111827;
   text-decoration: none;
-  font-weight: normal;
+  font-weight: 700;
+  font-size: 1.25rem;
 }
 
-.site-header a:hover {
-  text-decoration: underline;
+.site-header .header-button {
+  color: #ffffff;
+}
+
+.site-branding p {
+  margin: 0.35rem 0 0;
+  color: #4b5563;
 }
 
 .site-main {
   flex: 1;
   padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .site-footer {
   padding: 0.75rem 1.5rem;
-  background: #eee;
+  background: #ffffff;
+  border-top: 1px solid #d1d5db;
   font-size: 0.875rem;
   color: #555;
 }
 
 .site-footer p {
   margin: 0;
+  text-align: center;
 }

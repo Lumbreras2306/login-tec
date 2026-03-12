@@ -1,0 +1,158 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}Pelea Pokemon{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="home">
+    <div class="container battle-container">
+        <h1>Pelea Pokemon</h1>
+        <div class="actions">
+            <a class="button secondary" href="{% url 'home' %}">Volver al listado</a>
+        </div>
+
+        <form class="battle-form" method="post">
+            {% csrf_token %}
+            <div class="battle-select">
+                <label for="first_pokemon">Pokemon 1</label>
+                <input list="pokemon-options" id="first_pokemon" name="first_pokemon" value="{{ first_choice }}" required>
+            </div>
+            <div class="battle-select">
+                <label for="second_pokemon">Pokemon 2</label>
+                <input list="pokemon-options" id="second_pokemon" name="second_pokemon" value="{{ second_choice }}" required>
+            </div>
+            <button class="button" type="submit">Iniciar pelea</button>
+            <datalist id="pokemon-options">
+                {% for pokemon_name in pokemon_names %}
+                    <option value="{{ pokemon_name }}">
+                {% endfor %}
+            </datalist>
+        </form>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        {% if battle %}
+            <div class="battle-stage">
+                <article class="fighter-card fighter-left">
+                    <img src="{{ battle.left.image }}" alt="{{ battle.left.name }}" width="160" height="160">
+                    <h2>{{ battle.left.name }}</h2>
+                    <p data-left-hp>Vida: 100%</p>
+                    <div class="hp-bar">
+                        <div class="hp-bar-fill" data-left-bar style="width: 100%;"></div>
+                    </div>
+                    <p>HP: {{ battle.left.stats.hp }}</p>
+                    <p>Ataque: {{ battle.left.stats.attack }}</p>
+                    <p>Defensa: {{ battle.left.stats.defense }}</p>
+                    <p>Ataque especial: {{ battle.left.stats.special_attack }}</p>
+                    <p>Defensa especial: {{ battle.left.stats.special_defense }}</p>
+                    <p>Velocidad: {{ battle.left.stats.speed }}</p>
+                </article>
+
+                <div class="battle-center">
+                    <p class="battle-vs">VS</p>
+                    <p class="battle-turn" data-battle-turn>Esperando primer turno...</p>
+                </div>
+
+                <article class="fighter-card fighter-right">
+                    <img src="{{ battle.right.image }}" alt="{{ battle.right.name }}" width="160" height="160">
+                    <h2>{{ battle.right.name }}</h2>
+                    <p data-right-hp>Vida: 100%</p>
+                    <div class="hp-bar">
+                        <div class="hp-bar-fill" data-right-bar style="width: 100%;"></div>
+                    </div>
+                    <p>HP: {{ battle.right.stats.hp }}</p>
+                    <p>Ataque: {{ battle.right.stats.attack }}</p>
+                    <p>Defensa: {{ battle.right.stats.defense }}</p>
+                    <p>Ataque especial: {{ battle.right.stats.special_attack }}</p>
+                    <p>Defensa especial: {{ battle.right.stats.special_defense }}</p>
+                    <p>Velocidad: {{ battle.right.stats.speed }}</p>
+                </article>
+            </div>
+
+            <section class="winner-box is-hidden" data-winner-box>
+                <p class="winner-label">Ganador</p>
+                <img src="{{ battle.winner.image }}" alt="{{ battle.winner.name }}" width="180" height="180">
+                <h2>{{ battle.winner.name }}</h2>
+            </section>
+
+            <section class="battle-log">
+                <h2>Pasos de la pelea</h2>
+                <ol data-battle-log></ol>
+            </section>
+
+            {{ battle.steps|json_script:"battle-steps-data" }}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if battle %}
+<script>
+    (() => {
+        const stepsNode = document.getElementById('battle-steps-data');
+        const leftHp = document.querySelector('[data-left-hp]');
+        const rightHp = document.querySelector('[data-right-hp]');
+        const leftBar = document.querySelector('[data-left-bar]');
+        const rightBar = document.querySelector('[data-right-bar]');
+        const turnNode = document.querySelector('[data-battle-turn]');
+        const logNode = document.querySelector('[data-battle-log]');
+        const winnerBox = document.querySelector('[data-winner-box]');
+
+        if (!stepsNode || !leftHp || !rightHp || !leftBar || !rightBar || !turnNode || !logNode || !winnerBox) {
+            return;
+        }
+
+        const steps = JSON.parse(stepsNode.textContent);
+        if (!Array.isArray(steps) || steps.length === 0) {
+            winnerBox.classList.remove('is-hidden');
+            return;
+        }
+
+        let currentStep = 0;
+
+        const revealStep = () => {
+            const step = steps[currentStep];
+            if (!step) {
+                turnNode.textContent = 'Pelea terminada';
+                winnerBox.classList.remove('is-hidden');
+                return;
+            }
+
+            turnNode.textContent = `Turno ${step.turn}`;
+            leftHp.textContent = `Vida: ${step.left_hp}%`;
+            rightHp.textContent = `Vida: ${step.right_hp}%`;
+            leftBar.style.width = `${step.left_hp}%`;
+            rightBar.style.width = `${step.right_hp}%`;
+
+            const item = document.createElement('li');
+            item.textContent = step.message;
+            logNode.appendChild(item);
+            while (logNode.children.length > 3) {
+                logNode.removeChild(logNode.firstElementChild);
+            }
+            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            currentStep += 1;
+            if (currentStep < steps.length) {
+                window.setTimeout(revealStep, 3500);
+            } else {
+                window.setTimeout(() => {
+                    turnNode.textContent = 'Pelea terminada';
+                    winnerBox.classList.remove('is-hidden');
+                    winnerBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 3500);
+            }
+        };
+
+        window.setTimeout(revealStep, 600);
+    })();
+</script>
+{% endif %}
+{% endblock %}
